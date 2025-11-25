@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../Footer.jsx";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -10,7 +10,6 @@ export default function Signup() {
     const [fullName, setFullName] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -30,25 +29,20 @@ export default function Signup() {
             const data = response.data;
 
             if (data.access) {
-                // Store both access and refresh tokens in localStorage
-                localStorage.setItem("access", data.access);
-                localStorage.setItem("refresh", data.refresh);
+                localStorage.setItem("token", data.access);
             }
 
-            navigate("/"); // Redirect to home after successful signup
+            navigate("/homepage");
         } catch (err) {
             if (err.response) {
-                // Handle error response from backend
                 setError(err.response.data.error || "Signup failed. Try again.");
             } else {
-                // Handle network or other errors
                 setError("Something went wrong.");
             }
         }
 
         setLoading(false);
     };
-
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-[#fafafa] py-10">
             <div className="w-full max-w-sm bg-white border border-gray-300 p-6 flex flex-col items-center">

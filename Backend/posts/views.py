@@ -6,31 +6,50 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile, Post, Media, Comment, Like, Follow
 from rest_framework import status, viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from .serializers import (
+    PostSerializer,
+    MediaSerializer,
+    CommentSerializer,
+    LikeSerializer,
+    ProfileSerializer,
+    FollowSerializer,
+)
+
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
 def signup_view(request):
     username = request.data.get("username")
     email = request.data.get("email")
     password = request.data.get("password")
+    full_name = request.data.get("full_name")
 
-    # Check if username already exists
+    if not username or not email or not password:
+        return Response({"error": "username, email and password are required"}, status=400)
+
     if User.objects.filter(username=username).exists():
         return Response({"error": "Username already exists"}, status=400)
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+        first_name=(full_name or "")
+    )
 
-    # Create the user
-    user = User.objects.create_user(username=username, email=email, password=password)
-    Profile.objects.create(user=user)  # Create a profile for the user
+    # Create profile record (if you want a Profile entry right away)
+    Profile.objects.create(user=user)
 
-    # Generate JWT tokens
+    # Create tokens
     refresh = RefreshToken.for_user(user)
-    access_token = refresh.access_token
 
-    # Return tokens in response
     return Response({
         "success": True,
         "message": "Signup successful",
-        "access": str(access_token),  # Access token
-        "refresh": str(refresh),  # Refresh token
+        "access": str(refresh.access_token),
+        "refresh": str(refresh),
     })
 
 @api_view(['POST'])

@@ -1,22 +1,20 @@
 import React from "react";
-import { profileData } from "./profileData";
-import {
-    Home,
-    User,
-    Bookmark,
-    Settings,
-    LogOut,
-    SwitchCamera
-} from "lucide-react";
+import { Home, User, Bookmark, Settings, LogOut, SwitchCamera } from "lucide-react";
+import useProfile from "./UseProfile.js";
+import { Link } from "react-router-dom";
 
 export default function ProfileSidebar() {
+    const profileData = useProfile();
+
+    if (!profileData) return null;
+
     return (
         <div className="w-64 h-screen border-r border-gray-300 p-4 fixed left-0 top-0">
 
             {/* Profile Section */}
             <div className="flex items-center gap-3 mb-8">
                 <img
-                    src={profileData.profilePic}
+                    src={profileData.profilePic || "/default-avatar.png"}
                     className="w-14 h-14 rounded-full object-cover"
                 />
                 <div>
@@ -28,25 +26,37 @@ export default function ProfileSidebar() {
             {/* Menu Options */}
             <div className="flex flex-col gap-4 font-medium">
 
-                <button className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2">
+                <Link
+                    to="/homepage"
+                    className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2"
+                >
                     <Home size={20} />
                     Home
-                </button>
+                </Link>
 
-                <button className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2">
+                <Link
+                    to="/profile"
+                    className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2"
+                >
                     <User size={20} />
                     Profile
-                </button>
+                </Link>
 
-                <button className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2">
+                <Link
+                    to="/saved"
+                    className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2"
+                >
                     <Bookmark size={20} />
                     Saved
-                </button>
+                </Link>
 
-                <button className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2">
+                <Link
+                    to="/settings"
+                    className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2"
+                >
                     <Settings size={20} />
                     Settings
-                </button>
+                </Link>
 
                 <button className="flex items-center gap-3 hover:bg-gray-100 rounded-lg px-3 py-2">
                     <SwitchCamera size={20} />

@@ -61,3 +61,42 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment {self.id} on Post {self.post.id}"
+
+class Story(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="stories"
+    )
+    file = models.FileField(upload_to="stories/")
+    media_type = models.CharField(
+        max_length=10,
+        choices=(("image", "Image"), ("video", "Video"))
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            from datetime import timedelta, datetime
+            self.expires_at = datetime.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Story by {self.user.username}"
+
+
+class StoryView(models.Model):
+    story = models.ForeignKey(
+        Story,
+        related_name="views",
+        on_delete=models.CASCADE
+    )
+    viewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("story", "viewer")

@@ -1,11 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Footer from "../Footer.jsx";
-import axios from "axios"; // Import Axios
+import axios from "axios";
 
 function Login() {
-    const navigate = useNavigate();
 
+    const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -20,16 +20,16 @@ function Login() {
 
         try {
             const response = await axios.post('http://127.0.0.1:8000/api/auth/login/', { username, password });
-            const { access, refresh } = response.data;
+            const { access, refresh, user } = response.data;
+
             localStorage.setItem("access", access);
             localStorage.setItem("refresh", refresh);
-
-            // Redirect to home page
+            localStorage.setItem("user", JSON.stringify(user)); // <-- Save user
             navigate("/homepage");
+
         } catch (err) {
             // Handle Axios errors
             if (err.response) {
-                // Backend responded with a status code other than 2xx
                 setError(err.response.data.detail || "Invalid login credentials");
             } else if (err.request) {
                 // Request was made, but no response received

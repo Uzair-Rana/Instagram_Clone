@@ -1,65 +1,97 @@
-import React from "react";
-import {
-    Heart,
-    MessageCircle,
-    Send,
-    Bookmark,
-    MoreHorizontal,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { resolveUrl } from "../Api/Api.jsx";
 
 export default function Feed({ posts }) {
+    const [user, setUser] = useState(null);
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+            console.log(user)
+        } else {
+            console.warn("User not found in localStorage. Please login.");
+        }
+    }, []);
+
+    if (!Array.isArray(posts)) return null;
+
+    const mappedPosts = posts.map(post => {
+        const author = post.author || {};
+        const profileAvatarRaw =
+            author.profile?.avatar ??
+            author.profile_avatar ??
+            author.avatar ??
+            null;
+
+        const profilePic = resolveUrl(profileAvatarRaw) || "/default-avatar.png";
+
+        const media = Array.isArray(post.media) ? post.media : [];
+        const firstMediaUrl =
+            media.length > 0 ? resolveUrl(media[0].file) : null;
+
+        const comments = Array.isArray(post.comments)
+            ? post.comments.map(c => c.text || "")
+            : [];
+
+        return {
+            id: post.id,
+            username: author.username || "unknown",
+            profilePic,
+            image: firstMediaUrl,
+            likes: post.likes_count ?? post.likes?.length ?? 0,
+            caption: post.caption || "",
+            comments,
+            time: post.created_at
+                ? new Date(post.created_at).toLocaleString()
+                : "",
+        };
+    });
+
     return (
-        <div className="flex flex-col gap-8 max-w-xl mx-auto mt-6">
+        <div className="flex flex-col gap-6 mt-4 ml-0">
+            {mappedPosts.map(post => (
+                <div key={post.id} className="bg-white border border-gray-300 rounded-md shadow-sm p-4">
 
-            {posts.map((post) => (
-                <div key={post.id} className="border border-gray-300 rounded-lg">
-
-                    {/* -------- POST HEADER -------- */}
-                    <div className="flex items-center justify-between px-4 py-3">
-                        <div className="flex items-center gap-3">
-                            <img
-                                src={post.profilePic}
-                                className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <p className="font-semibold text-sm">{post.username}</p>
-                        </div>
-                        <MoreHorizontal size={22} />
+                    <div className="flex items-center gap-3 mb-2">
+                        <img
+                            src={post.profilePic}
+                            alt={post.username}
+                            className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <p className="font-semibold">{post.username}</p>
                     </div>
 
-                    {/* -------- POST IMAGE -------- */}
-                    <img
-                        src={post.image}
-                        className="w-full max-h-[550px] object-cover"
-                    />
+                    {/* MEDIA */}
+                    {post.image && (
+                        <img
+                            src={post.image}
+                            alt="post"
+                            className="w-full max-h-[500px] object-cover rounded-md mb-2"
+                        />
+                    )}
 
-                    {/* -------- POST ACTIONS -------- */}
-                    <div className="flex items-center justify-between px-4 py-3">
-                        <div className="flex items-center gap-4">
-                            <Heart className="cursor-pointer hover:scale-110 transition" />
-                            <MessageCircle className="cursor-pointer hover:scale-110 transition" />
-                            <Send className="cursor-pointer hover:scale-110 transition" />
-                        </div>
-                        <Bookmark className="cursor-pointer hover:scale-110 transition" />
+                    {/* CAPTION */}
+                    <p className="mb-2">{post.caption}</p>
+
+                    {/* LIKES */}
+                    <p className="text-sm font-semibold mb-1">{post.likes} likes</p>
+
+                    {/* COMMENTS */}
+                    <div className="text-sm text-gray-700">
+                        {post.comments.map((comment, idx) => (
+                            <p key={idx}>{comment}</p>
+                        ))}
                     </div>
 
-                    {/* -------- LIKE COUNT -------- */}
-                    <p className="font-semibold px-4 text-sm">{post.likes} likes</p>
+                    {/* TIME */}
+                    <p className="text-xs text-gray-400 mt-2">{post.time}</p>
 
-                    {/* -------- CAPTION -------- */}
-                    <div className="px-4 text-sm">
-                        <span className="font-semibold mr-2">{post.username}</span>
-                        {post.caption}
-                    </div>
-
-                    {/* -------- VIEW COMMENTS -------- */}
-                    <p className="px-4 text-gray-500 text-sm mt-1 cursor-pointer">
-                        View all {post.comments.length} comments
-                    </p>
-
-                    {/* -------- TIME AGO -------- */}
-                    <p className="px-4 text-gray-400 text-xs uppercase mb-3">
-                        {post.time}
-                    </p>
+                    {/* Optional: Show user info if available */}
+                    {user && (
+                        <p className="text-xs text-gray-400 mt-1">
+                            Logged in as: {user.username}
+                        </p>
+                    )}
                 </div>
             ))}
         </div>

@@ -1,7 +1,7 @@
 # posts/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Post, Media, Comment, Like, Profile, Follow
+from .models import Post, Media, Comment, Like, Profile, Follow, Story, StoryView
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,6 +12,7 @@ class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
         fields = '__all__'
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +25,7 @@ class LikeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PostSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
     media = MediaSerializer(many=True, read_only=True)
     comments = CommentSerializer(many=True, read_only=True)
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
@@ -31,6 +33,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
@@ -43,3 +46,18 @@ class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = '__all__'
+
+class StoryViewSerializer(serializers.ModelSerializer):
+    viewer_username = serializers.CharField(source="viewer.username", read_only=True)
+
+    class Meta:
+        model = StoryView
+        fields = "__all__"
+
+
+class StorySerializer(serializers.ModelSerializer):
+    views_count = serializers.IntegerField(source="views.count", read_only=True)
+
+    class Meta:
+        model = Story
+        fields = "__all__"

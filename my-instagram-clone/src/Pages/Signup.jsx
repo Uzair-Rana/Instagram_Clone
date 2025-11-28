@@ -26,13 +26,12 @@ export default function Signup() {
                 password,
             });
 
-            const data = response.data;
-
-            if (data.access) {
-                localStorage.setItem("token", data.access);
-            }
-
+            const { access, refresh, user } = response.data; // Backend must send user
+            localStorage.setItem("access", access);
+            localStorage.setItem("refresh", refresh);
+            localStorage.setItem("user", JSON.stringify(user)); // <-- Save user
             navigate("/homepage");
+
         } catch (err) {
             if (err.response) {
                 setError(err.response.data.error || "Signup failed. Try again.");

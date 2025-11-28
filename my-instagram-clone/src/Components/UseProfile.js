@@ -4,22 +4,22 @@ import API, { resolveUrl } from "../Api/Api.jsx";
 export default function useProfile() {
     const [profile, setProfile] = useState(null);
 
-    useEffect(() => {
-        const loadProfile = async () => {
-            try {
-                const res = await API.get("/auth/me/");
-                setProfile({
-                    username: res.data.username,
-                    name: res.data.name,
-                    profilePic: resolveUrl(res.data.avatar),
-                });
-            } catch (err) {
-                console.error("Failed to load profile:", err);
-            }
-        };
+    const loadProfile = async () => {
+        try {
+            const res = await API.get("/auth/me/");
+            setProfile({
+                username: res.data.username,
+                name: res.data.name,
+                profilePic: resolveUrl(res.data.avatar),
+            });
+        } catch (err) {
+            console.error("Failed to load profile:", err);
+        }
+    };
 
+    useEffect(() => {
         loadProfile();
     }, []);
 
-    return profile;
+    return { profile, refreshProfile: loadProfile };
 }

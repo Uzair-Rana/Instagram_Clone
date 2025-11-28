@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -30,6 +31,9 @@ from .serializers import (
     FollowSerializer,
     UserSerializer,
     StorySerializer,
+    ProfileUpdateSerializer,
+    UserUpdateSerializer
+
 )
 
 
@@ -125,27 +129,32 @@ def me_view(request):
 
 
 # ------------------------------
-# STORIES
+# STORIES (FINAL FIXED VERSION)
 # ------------------------------
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def stories_feed(request):
     """
-    Returns stories grouped by user, and includes:
+    Returns stories grouped by user:
     - username
     - avatar
-    - each story with file URL & viewed status
+    - stories list
+    - whether current user has viewed each story
     """
+
     user = request.user
     now = timezone.now()
 
+    # user + following stories
     following_ids = Follow.objects.filter(
         follower=user
     ).values_list("following_id", flat=True)
 
+    valid_users = list(following_ids) + [user.id]
+
     stories = Story.objects.filter(
-        user_id__in=list(following_ids) + [user.id],
+        user_id__in=valid_users,
         expires_at__gt=now
     ).order_by("user_id", "-created_at")
 
@@ -167,7 +176,8 @@ def stories_feed(request):
             "id": story.id,
             "url": story.file.url,
             "media_type": story.media_type,
-            "viewed": viewed
+            "viewed": viewed,
+            "created_at": story.created_at
         })
 
     return Response(list(grouped.values()))
@@ -178,8 +188,7 @@ def stories_feed(request):
 @parser_classes([MultiPartParser, FormParser])
 def create_story(request):
     """
-    Function-based endpoint for story upload.
-    Ensures multipart parser is used (prevents 415).
+    Upload a story correctly using multipart form.
     """
     user = request.user
     file = request.FILES.get("file")
@@ -187,7 +196,7 @@ def create_story(request):
     if not file:
         return Response({"error": "No file uploaded"}, status=400)
 
-    # Detect file type
+    # detect file type
     content_type = file.content_type or ""
     if content_type.startswith("image"):
         media_type = "image"
@@ -205,24 +214,55 @@ def create_story(request):
     return Response({
         "message": "Story uploaded successfully",
         "story_id": story.id,
-        "media_type": story.media_type,
-        "url": story.file.url
+        "url": story.file.url,
+        "media_type": media_type
     })
 
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def mark_story_viewed(request, story_id):
+    """
+    Mark a story as viewed by current user.
+    """
     try:
         story = Story.objects.get(id=story_id)
     except Story.DoesNotExist:
-        return Response({"error": "story not found"}, status=404)
+        return Response({"error": "Story not found"}, status=404)
 
     StoryView.objects.get_or_create(story=story, viewer=request.user)
 
     return Response({"success": True})
 
 
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_story(request, story_id):
+    """
+    Allows ONLY the owner to delete their story.
+    Fixes 404 issue for delete route.
+    """
+    try:
+        story = Story.objects.get(id=story_id, user=request.user)
+    except Story.DoesNotExist:
+        return Response({"error": "Story not found or unauthorized"}, status=404)
+
+    story.delete()
+    return Response({"success": True, "message": "Story deleted"})
+
+
+# ------------------------------
+# STORY VIEWSET (FOR ADMIN / OPTIONAL)
+# ------------------------------
+
+class StoryViewSet(viewsets.ModelViewSet):
+    queryset = Story.objects.filter(expires_at__gt=timezone.now()).order_by("-created_at")
+    serializer_class = StorySerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 # ------------------------------
 # FEED / POSTS
@@ -365,3 +405,30 @@ def all_stories(request):
     now = timezone.now()
     stories = Story.objects.filter(expires_at__gt=now)
     return Response(StorySerializer(stories, many=True).data)
+
+
+class ProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def put(self, request):
+        user = request.user
+        profile = request.user.profile
+
+        user_serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+        profile_serializer = ProfileUpdateSerializer(profile, data=request.data, partial=True)
+
+        if user_serializer.is_valid() and profile_serializer.is_valid():
+            user_serializer.save()
+            profile_serializer.save()
+
+            return Response({
+                "username": user.username,
+                "name": profile.name,
+                "avatar": profile.avatar.url if profile.avatar else None
+            })
+
+        return Response({
+            "user_errors": user_serializer.errors,
+            "profile_errors": profile_serializer.errors
+        }, status=400)

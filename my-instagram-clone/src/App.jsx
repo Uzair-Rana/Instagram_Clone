@@ -8,6 +8,10 @@ import SavedPage from "./Components/SavedPage.jsx";
 import SettingsPage from "./Components/SettingsPage.jsx";
 
 import ProfileSidebar from "./Components/ProfileSidebar";
+import EditProfile from "./Components/EditProfile.jsx";
+import ChangePassword from "./Components/ChangePassword.jsx";
+import HelpCenter from "./Components/HelpCenter.jsx";
+import PrivacyPolicy from "./Components/PrivacyPolicy.jsx";
 
 function App() {
     return (
@@ -16,6 +20,7 @@ function App() {
                 <Route path="/" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgetpassword" element={<ForgotPassword />} />
+
                 <Route
                     path="/homepage"
                     element={
@@ -26,21 +31,13 @@ function App() {
                     }
                 />
 
-                <Route
-                    path="/profile"
-                    element={<ProfilePage />}
-                />
-
-                <Route
-                    path="/saved"
-                    element={
-                            <SavedPage />}
-                />
-
-                <Route
-                    path="/settings"
-                    element={<SettingsPage />}
-                />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/saved" element={<SavedPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/change-password" element={<ChangePassword />} />
+                <Route path="/edit-profile" element={<EditProfile />} />
+                <Route path="/help-center" element={<HelpCenter />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             </Routes>
         </>
     );

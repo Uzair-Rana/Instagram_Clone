@@ -135,17 +135,8 @@ def me_view(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def stories_feed(request):
-    """
-    Returns stories grouped by user:
-    - username
-    - avatar
-    - stories list
-    - whether current user has viewed each story
-    """
-
     user = request.user
     now = timezone.now()
-
     # user + following stories
     following_ids = Follow.objects.filter(
         follower=user

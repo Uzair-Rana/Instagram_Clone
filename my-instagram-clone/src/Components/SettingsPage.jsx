@@ -1,56 +1,50 @@
 import React from "react";
-import { User, Lock, Bell, HelpCircle, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { FaUserEdit, FaLock, FaQuestionCircle, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 
 export default function SettingsPage() {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/");
+    };
+
+    const settingsOptions = [
+        { label: "Edit Profile", icon: <FaUserEdit />, onClick: () => navigate("/edit-profile") },
+        { label: "Change Password", icon: <FaLock />, onClick: () => navigate("/change-password") },
+        { label: "Help Center", icon: <FaQuestionCircle />, onClick: () => navigate("/help-center") },
+        { label: "Privacy Policy", icon: <FaShieldAlt />, onClick: () => navigate("/privacy-policy") },
+        { label: "Logout", icon: <FaSignOutAlt />, onClick: handleLogout, color: "bg-red-500 hover:bg-red-600 text-white" },
+    ];
+
     return (
-        <div className="flex flex-col items-center w-full p-6">
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-yellow-50 flex flex-col items-center justify-start py-12 px-4">
+            <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+                {/* Decorative blurred circles */}
+                <div className="absolute -top-16 -right-16 w-40 h-40 bg-purple-300 rounded-full opacity-30 blur-3xl"></div>
+                <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-pink-300 rounded-full opacity-30 blur-3xl"></div>
 
-            {/* HEADER */}
-            <h1 className="text-2xl font-bold mb-6">Settings</h1>
+                <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
+                    Settings
+                </h1>
 
-            {/* SETTINGS CARD */}
-            <div className="w-full max-w-xl bg-white shadow-md rounded-xl p-6 border border-gray-200">
-
-                {/* Account */}
-                <SectionTitle title="Account" />
-                <SettingItem icon={<User size={20} />} label="Edit Profile" />
-                <SettingItem icon={<Lock size={20} />} label="Change Password" />
-
-                {/* Notifications */}
-                <SectionTitle title="Notifications" />
-                <SettingItem icon={<Bell size={20} />} label="Push Notifications" />
-                <SettingItem icon={<Bell size={20} />} label="Story Notifications" />
-
-                {/* Support */}
-                <SectionTitle title="Support & About" />
-                <SettingItem icon={<HelpCircle size={20} />} label="Help Center" />
-                <SettingItem icon={<HelpCircle size={20} />} label="Privacy Policy" />
-
-                {/* Logout */}
-                <div className="mt-6">
-                    <button className="w-full bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600">
-                        <LogOut className="inline-block mr-2" size={20} />
-                        Logout
-                    </button>
+                <div className="space-y-4">
+                    {settingsOptions.map((option, index) => (
+                        <button
+                            key={index}
+                            onClick={option.onClick}
+                            className={`flex items-center w-full p-4 rounded-2xl shadow-md transition-transform transform hover:-translate-y-1 hover:shadow-xl ${
+                                option.color ? option.color : "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+                            }`}
+                        >
+                            <span className="text-xl mr-4">{option.icon}</span>
+                            <span className="text-lg font-medium">{option.label}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
         </div>
-    );
-}
-
-function SettingItem({ icon, label }) {
-    return (
-        <div className="flex items-center gap-3 py-3 px-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-            {icon}
-            <p className="text-gray-700">{label}</p>
-        </div>
-    );
-}
-
-function SectionTitle({ title }) {
-    return (
-        <h2 className="text-lg font-semibold text-gray-700 mt-4 mb-2 border-b pb-1">
-            {title}
-        </h2>
     );
 }

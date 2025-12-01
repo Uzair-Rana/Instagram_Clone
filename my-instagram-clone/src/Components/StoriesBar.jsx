@@ -17,30 +17,21 @@ export default function StoriesBar({ stories, setStories, onStoryClick }) {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
-            // 🔥 Reload stories instantly
             const updated = await API.get("/stories/feed/");
-            if (Array.isArray(updated.data)) {
-                setStories(updated.data);
-            }
+            if (Array.isArray(updated.data)) setStories(updated.data);
         } catch (err) {
             console.error("Error uploading story", err);
             alert("Failed to upload story.");
         }
     };
 
-    // 🔥 DELETE STORY
     const handleDeleteStory = async (storyId) => {
         if (!window.confirm("Delete this story?")) return;
 
         try {
-            console.log(storyId)
             await API.delete(`/stories/delete/${storyId}/`);
-
-            // Reload updated stories
             const updated = await API.get("/stories/feed/");
-            if (Array.isArray(updated.data)) {
-                setStories(updated.data);
-            }
+            if (Array.isArray(updated.data)) setStories(updated.data);
         } catch (err) {
             console.error("Failed to delete story", err);
             alert("Could not delete story.");
@@ -50,23 +41,22 @@ export default function StoriesBar({ stories, setStories, onStoryClick }) {
     if (!Array.isArray(stories)) return null;
 
     return (
-        <div className="w-full flex gap-4 overflow-x-auto py-4 px-2 border-b border-gray-300 scrollbar-hide">
-
+        <div className="w-full flex gap-4 overflow-x-auto py-4 px-2 border-b border-gray-200 scrollbar-hide">
             {/* ADD STORY BUTTON */}
             <div
-                className="flex flex-col items-center cursor-pointer"
+                className="flex flex-col items-center cursor-pointer group"
                 onClick={() => fileInputRef.current.click()}
             >
-                <div className="p-[2px] rounded-full bg-blue-500">
+                <div className="p-[2px] rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 transition-transform transform group-hover:scale-110">
                     <div className="bg-white p-[2px] rounded-full flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-3xl">
+                        <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-3xl font-bold">
                             +
                         </div>
                     </div>
                 </div>
-
-                <p className="text-xs mt-1 w-16 truncate text-center">Add Story</p>
-
+                <p className="text-xs mt-1 w-16 truncate text-center text-gray-600">
+                    Add Story
+                </p>
                 <input
                     type="file"
                     accept="image/*,video/*"
@@ -86,20 +76,21 @@ export default function StoriesBar({ stories, setStories, onStoryClick }) {
                 const hasUnviewed = storiesList.some((s) => !s.viewed);
 
                 return (
-                    <div key={uid} className="relative flex flex-col items-center">
-
-                        {/* DELETE BUTTON (top-right) */}
-                        <button
-                            onClick={() => handleDeleteStory(storiesList[0]?.id)}
-                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-sm flex items-center justify-center hover:bg-red-700"
-                            title="Delete Story"
-                        >
-                            ✕
-                        </button>
+                    <div key={uid} className="relative flex flex-col items-center group">
+                        {/* DELETE BUTTON */}
+                        {storiesList.length > 0 && (
+                            <button
+                                onClick={() => handleDeleteStory(storiesList[0]?.id)}
+                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-sm flex items-center justify-center hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Delete Story"
+                            >
+                                ✕
+                            </button>
+                        )}
 
                         {/* Story Thumbnail */}
                         <div
-                            className="cursor-pointer"
+                            className="cursor-pointer transition-transform transform hover:scale-110"
                             onClick={() => onStoryClick(userStory)}
                         >
                             <div
@@ -107,7 +98,7 @@ export default function StoriesBar({ stories, setStories, onStoryClick }) {
                                     hasUnviewed
                                         ? "bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600"
                                         : "bg-gray-300"
-                                }`}
+                                } transition-all duration-300`}
                             >
                                 <div className="bg-white p-[2px] rounded-full">
                                     <img
@@ -117,8 +108,9 @@ export default function StoriesBar({ stories, setStories, onStoryClick }) {
                                     />
                                 </div>
                             </div>
-
-                            <p className="text-xs mt-1 w-16 truncate text-center">{username}</p>
+                            <p className="text-xs mt-1 w-16 truncate text-center text-gray-700">
+                                {username}
+                            </p>
                         </div>
                     </div>
                 );

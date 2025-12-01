@@ -5,6 +5,7 @@ import ProfileSidebar from "../Components/ProfileSidebar";
 import Feed from "../Components/Feed";
 import CreatePostModal from "../Components/CreatePostModel";
 import API from "../Api/Api.jsx";
+import Suggestions from "../Components/Suggestions.jsx";
 
 export default function HomePage() {
     const [stories, setStories] = useState([]);
@@ -35,30 +36,49 @@ export default function HomePage() {
     }, []);
 
     return (
-        <div className="flex w-[80%]">
-            <ProfileSidebar />
-            <div className="ml-64 w-full mx-auto">
+        <div className="flex w-full bg-gray-50 min-h-screen">
+            {/* SIDEBAR */}
+            <div className="fixed left-0 top-0 h-full w-64 border-r bg-white shadow-sm">
+                <ProfileSidebar />
+            </div>
 
-                {/* STORIES */}
-                <StoriesBar
-                    stories={stories}
-                    setStories={setStories}
-                    onStoryClick={(story) => setSelectedStory(story)}
-                />
+            {/* MAIN CONTENT */}
+            <div className="ml-64 w-full flex justify-center">
+                <div className="w-full max-w-[600px] px-6">
+                    {/* STORIES BAR */}
+                    <div className="mt-6">
+                        <StoriesBar
+                            stories={stories}
+                            setStories={setStories}
+                            onStoryClick={(story) => setSelectedStory(story)}
+                        />
+                    </div>
 
-                {/* STORY VIEWER */}
-                {selectedStory && (
-                    <StoryViewer
-                        userData={selectedStory}
-                        onClose={() => setSelectedStory(null)}
-                    />
-                )}
+                    {/* STORY VIEWER */}
+                    {selectedStory && (
+                        <StoryViewer
+                            userData={selectedStory}
+                            onClose={() => setSelectedStory(null)}
+                        />
+                    )}
 
-                {/* FEED */}
-                <Feed posts={posts} />
+                    {/* FEED */}
+                    <div className="mt-6 space-y-6">
+                        <Feed posts={posts} />
+                    </div>
 
-                {/* CREATE POST MODAL */}
-                <CreatePostModal onPostCreated={fetchPosts} />
+                    {/* CREATE POST */}
+                    <div className="mt-10 pb-10 flex justify-center">
+                        <CreatePostModal onPostCreated={fetchPosts} />
+                    </div>
+                </div>
+
+                {/* SUGGESTIONS / RIGHT SIDEBAR */}
+                <div className="hidden lg:block w-[340px] px-4">
+                    <div className="sticky top-10 space-y-6">
+                        <Suggestions />
+                    </div>
+                </div>
             </div>
         </div>
     );
